@@ -1,0 +1,25 @@
+{
+   "name": "ship-tool-common",
+   "version": "0.1.54",
+   "private": true,
+   "license": "UNLICENSED",
+   "author": "Antti Salonen <antti.k.salonen@gmail.com",
+   "exports": {
+      "./Util": "./lib/Util.js",
+      "./Semaphore": "./lib/Semaphore.js",
+      "./Trajectory": "./lib/trajectory/Trajectory.js",
+      "./node/Util": "./lib/UtilNode.js"
+   },
+   "type": "module",
+   "scripts": {
+      "eslint": "eslint . --ignore-pattern \"node_modules/*\""
+   },
+   "devDependencies": {
+      "@eslint/js": "9.39.2",
+      "dotenv": "17.2.3",
+      "eslint": "9.36.0",
+      "find-config": "1.0.0",
+      "gettext-parser": "7.0.1",
+      "globals": "16.4.0"
+   }
+}

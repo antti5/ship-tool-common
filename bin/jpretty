@@ -1,0 +1,27 @@
+#!/usr/bin/env node
+
+/* Read UTF8-formatted JSON from stdin and print it out prettified */
+
+import fs from 'fs';
+import zlib from 'zlib';
+
+const print = data => {
+   console.log(JSON.stringify(JSON.parse(data), null, 3));
+};
+
+if (process.argv.length > 2)
+   for (const filename of process.argv.slice(2))
+      print(filename.endsWith('.gz') ?
+         zlib.gunzipSync(fs.readFileSync(filename)) :
+         fs.readFileSync(filename)
+      );
+else {
+   const chunks = [];
+   for await (const chunk of process.stdin)
+      chunks.push(chunk);
+
+   let data = Buffer.concat(chunks);
+   if (data[0] === 0x1f && data[1] === 0x8b)
+      data = zlib.gunzipSync(data);
+   print(data);
+}

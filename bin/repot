@@ -1,0 +1,69 @@
+#!/bin/bash
+
+RED='\033[0;31m'
+GRAY='\033[1;30m'
+RESET='\033[0m'
+
+banner() {
+   echo
+   echo " $1 $2 " | tr '[:print:]' '='
+   echo -n " $1"
+   echo -en $GRAY
+   echo -n " $2"
+   echo -e $RESET
+   echo " $1 $2 " | tr '[:print:]' '='
+   echo
+}
+
+REPOS_DIRECTORY=$HOME
+
+REPOS=""
+for repo in ship-tool/common ship-tool/frontend ship-tool/backend ship-tool/data; do
+   if [ -d $REPOS_DIRECTORY/$repo ]; then
+      REPOS="$REPOS $repo"
+   else
+      echo -e "\nWarning: Repository \"$repo\" is not cloned?\n"
+      sleep 2
+   fi
+done
+
+# Store current working directory
+
+PWD=`pwd`
+
+# List local source files
+
+FILES_INCLUDE='js$\|jsx$\|py$\|css$'
+FILES_EXCLUDE='^build.*/'
+
+files=''
+
+cd $REPOS_DIRECTORY
+for repo in $REPOS; do
+   cd $repo
+   for file in `git ls-files | grep $FILES_INCLUDE | grep -v $FILES_EXCLUDE`; do
+      files="$files$repo/$file "
+   done
+   cd $REPOS_DIRECTORY
+done
+
+wc -l $files
+
+# Update remote refs for repos and check if there are incoming or outgoing changes
+
+for repo in $REPOS; do
+   cd $REPOS_DIRECTORY/$repo
+   name=`jgrep -v name package.json`
+   version=`jgrep -v ^version package.json`
+   banner $name $version
+   git remote update origin
+   git status
+   # Print out warnings if dependencies are not up to date
+   echo -en $RED
+   npm ls > /dev/null
+   echo -en $RESET
+done
+
+# Restore working directory
+
+cd $PWD
