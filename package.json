@@ -1,7 +1,6 @@
 {
    "name": "@antti5/ship-tool-common",
    "version": "1.0.0",
-   "private": true,
    "license": "UNLICENSED",
    "author": "Antti Salonen <antti.k.salonen@gmail.com",
    "exports": {
