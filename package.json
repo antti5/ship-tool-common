@@ -1,5 +1,5 @@
 {
-   "name": "ship-tool-common",
+   "name": "@antti5/ship-tool-common",
    "version": "1.0.0",
    "private": true,
    "license": "UNLICENSED",
