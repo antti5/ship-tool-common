@@ -1,6 +1,6 @@
 {
    "name": "@antti5/ship-tool-common",
-   "version": "1.0.1",
+   "version": "1.0.2",
    "description": "Ship Tool common utils and library code",
    "repository": {
       "type": "git",
@@ -9,6 +9,12 @@
    "author": "Antti Salonen",
    "license": "MIT",
    "type": "module",
+   "bin": {
+      "curl_time": "bin/curl_time",
+      "jpretty": "bin/jpretty",
+      "repot": "bin/repot",
+      "tag": "bin/tag"
+   },
    "exports": {
       "./Util": "./lib/Util.js",
       "./Semaphore": "./lib/Semaphore.js",
