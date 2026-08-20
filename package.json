@@ -1,6 +1,6 @@
 {
    "name": "@antti5/ship-tool-common",
-   "version": "1.0.2",
+   "version": "1.0.3",
    "description": "Ship Tool common utils and library code",
    "repository": {
       "type": "git",
