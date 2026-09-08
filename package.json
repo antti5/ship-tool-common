@@ -1,6 +1,6 @@
 {
    "name": "@antti5/ship-tool-common",
-   "version": "1.0.8",
+   "version": "1.0.9",
    "description": "Ship Tool common utils and library code",
    "repository": {
       "type": "git",
@@ -12,7 +12,7 @@
    "bin": {
       "curl_time": "bin/curl_time",
       "jpretty": "bin/jpretty",
-      "repot": "bin/repot",
+      "repos": "bin/repos",
       "tag": "bin/tag"
    },
    "exports": {
