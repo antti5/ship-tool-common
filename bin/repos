@@ -33,7 +33,7 @@ PWD=`pwd`
 
 # List local source files
 
-FILES_INCLUDE='js$\|jsx$\|py$\|css$'
+FILES_INCLUDE='js$\|jsx$\|ts$\|tsx$\|py$\|css$'
 FILES_EXCLUDE='^build.*/'
 
 files=''
