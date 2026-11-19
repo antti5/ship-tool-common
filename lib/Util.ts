@@ -5,7 +5,7 @@ class Util {
    The executor function given to the Promise constructor simply sets a timeout to call
    the resolve function. The Promise is never rejected. */
 
-   static async sleep(ms) {
+   static async sleep(ms: number) {
       await new Promise(res => setTimeout(res, ms));
    }
 
@@ -26,25 +26,34 @@ class Util {
    is thrown. The error message contains the HTTP status text and code, and the "cause" property
    contains the Window.fetch() response object. */
 
-   static #fetchResponse = {};
+   static #fetchResponse: Record<string, { body: unknown, timestamp: number }> = {};
 
-   static async fetch (url, {
-      urlSearchParams,
-      method = 'GET',
-      body,
-      headers = {},
-      timeout,
-      debug
-   } = {}) {
+   static async fetch (
+      url: string,
+      {
+         urlSearchParams,
+         method = 'GET',
+         body,
+         headers = {},
+         timeout,
+         debug
+      }: {
+         urlSearchParams: Record<string,string>,
+         method: string,
+         body: unknown,
+         headers: Record<string,string>,
+         timeout: number,
+         debug: boolean
+      }
+   ) {
 
       if (urlSearchParams)
-         url += '?' + new URLSearchParams(urlSearchParams);
+         url += '?' + new URLSearchParams(urlSearchParams).toString();
 
-      const cacheMs = Number(
+      const cacheMs =
          typeof process !== 'undefined' ?
-            process.env?.VITE_FETCH_CACHE_MS :    // Vitest
-            import.meta?.env?.VITE_FETCH_CACHE_MS // Development and production
-      );
+            Number(process.env.VITE_FETCH_CACHE_MS) : // Vitest
+            null;
 
       if (cacheMs && Util.#fetchResponse[url]?.timestamp + cacheMs > Date.now()) {
          console.debug('Returning cached response for URL', url);
@@ -76,7 +85,7 @@ class Util {
 
       const responseBody =
          response.headers.get('Content-Type')?.includes('application/json') ?
-            await response.json() :
+            await response.json() as unknown :
             await response.text(); // If response isn't JSON, return a String instead -- TODO: This may be a poor design
 
       if (debug)
@@ -93,44 +102,10 @@ class Util {
       return responseBody;
    }
 
-   static #getEnvironment() {
-      return typeof process !== 'undefined' ?
-         process.env.NODE_ENV.trim() :
-         import.meta.env.MODE.trim();
-   }
-
-   static #isProduction() {
-      return window.location.host.endsWith('shiptool.st');
-   }
-
-   static envDevelopment() {
-      return Util.#getEnvironment() === 'development';
-   }
-
-   static envTest() {
-      return Util.#getEnvironment() === 'test';
-   }
-
-   static envDeployed() {
-      return Util.#getEnvironment() === 'production';
-   }
-
-   static envDeployedProduction() {
-      return Util.envDeployed() && Util.#isProduction();
-   }
-
-   static envDeployedTest() {
-      return Util.envDeployed() && !Util.#isProduction();
-   }
-
-   static envExperimental() {
-      return !Util.envDeployedProduction() && !window.ST_NO_EXPERIMENTAL;
-   }
-
 
    /* Generated random numbers and index for the next number */
 
-   static #randoms = [];
+   static #randoms: number[] = [];
    static #randomsIndex = 0;
 
    /* Get a random number, either from the #randoms array or create and store a new one */
@@ -148,51 +123,9 @@ class Util {
    }
 
 
-   static perfObject(key) {
-      window.ST_PERF ??= {};
-      window.ST_PERF[key] ??= [];
-      return window.ST_PERF[key];
-   }
-
-   static perfStart() {
-      return performance.now();
-   }
-
-   static perfEndMany(count, startTime, key, { log } = {}) {
-      const ms = performance.now() - startTime;
-      const o = Util.perfObject(key);
-
-      for (let i = 0; i < count; i++)
-         o.push(ms / count);
-
-      if (log) {
-         console.debug('Performance:', `${count}x`, key, Util.round(ms / count, 2), 'ms');
-         if (count > 1)
-            console.debug('Performance: Total:', Util.round(ms, 2), 'ms');
-      }
-   }
-
-   static perfEnd(...args) {
-      return Util.perfEndMany(1, ...args);
-   }
-
-   static perfReport() {
-      const result = {};
-      for (const [key, values] of Object.entries(window.ST_PERF ?? {}))
-         result[key] = {
-            count: values.length,
-            total: values.reduce((sum, ms) => sum + ms).toFixed(2) + ' ms',
-            avg: (values.reduce((sum, ms) => sum + ms) / values.length).toFixed(2) + ' ms',
-            min: Math.min(...values).toFixed(2) + ' ms',
-            max: Math.max(...values).toFixed(2) + ' ms'
-         };
-      return result;
-   }
-
-
    /* Returns s converted to an integer, but only if it falls into the acceptable range */
 
-   static parseIntRange(s, min, max) {
+   static parseIntRange(s: string, min: number, max: number) {
       if (isNaN(+s))
          return null;
       const n = Math.round(+s);
@@ -204,7 +137,7 @@ class Util {
 
    /* Round the number to given number of decimals. */
 
-   static round(number, decimals = 0) {
+   static round(number: number, decimals: number = 0) {
       const multiplier = Math.pow(10, decimals);
       return Math.round(number * multiplier) / multiplier;
    }
@@ -215,7 +148,7 @@ class Util {
 
    The integer part is not rounded, however. So (123.45, 4) --> 123.5, but (12345, 4) --> 12345. */
 
-   static roundPrecision(number, significantDigits) {
+   static roundPrecision(number: number, significantDigits: number) {
       return Util.round(
          number,
          Number(number) === 0 ?
@@ -241,12 +174,20 @@ class Util {
    "decimals" can also be a two-element array that gives the minimum and maximum number of
    fraction digits. */
 
-   static formatNumber(value, {
-      locale = 'en',
-      signed = false,
-      separatorMin = 1000,
-      decimals = 0
-   }  = {}) {
+   static formatNumber(
+      value: unknown,
+      {
+         locale = 'en',
+         signed = false,
+         separatorMin = 1000,
+         decimals = 0
+      }: {
+         locale?: string,
+         signed?: boolean,
+         separatorMin?: number,
+         decimals?: number | number[]
+      } = {}
+   ) {
 
       const number = Number(value);
 
@@ -256,7 +197,7 @@ class Util {
          return String(NaN);
       }
 
-      const options = {
+      const options: Intl.NumberFormatOptions = {
          /* Add thousand separators if value is big/small enough */
          useGrouping: Math.abs(number) >= separatorMin,
          signDisplay: signed ? 'exceptZero' : 'auto'
@@ -297,7 +238,7 @@ class Util {
 
    /* Format number of seconds to either like "40 or like "1:40". */
 
-   static formatSeconds(seconds) {
+   static formatSeconds(seconds: number) {
       if (seconds <= 60)
          return Math.round(seconds);
       else
@@ -309,21 +250,21 @@ class Util {
 
    https://stackoverflow.com/a/56444611 */
 
-   static toRoman(int) {
+   static toRoman(integer: number) {
       let roman = '';
-      roman += 'M'.repeat(int / 1000); int %= 1000;
-      roman += 'CM'.repeat(int / 900); int %= 900;
-      roman += 'D'.repeat(int / 500); int %= 500;
-      roman += 'CD'.repeat(int / 400); int %= 400;
-      roman += 'C'.repeat(int / 100); int %= 100;
-      roman += 'XC'.repeat(int / 90); int %= 90;
-      roman += 'L'.repeat(int / 50); int %= 50;
-      roman += 'XL'.repeat(int / 40); int %= 40;
-      roman += 'X'.repeat(int / 10); int %= 10;
-      roman += 'IX'.repeat(int / 9); int %= 9;
-      roman += 'V'.repeat(int / 5); int %= 5;
-      roman += 'IV'.repeat(int / 4); int %= 4;
-      roman += 'I'.repeat(int);
+      roman += 'M'.repeat(integer / 1000); integer %= 1000;
+      roman += 'CM'.repeat(integer / 900); integer %= 900;
+      roman += 'D'.repeat(integer / 500); integer %= 500;
+      roman += 'CD'.repeat(integer / 400); integer %= 400;
+      roman += 'C'.repeat(integer / 100); integer %= 100;
+      roman += 'XC'.repeat(integer / 90); integer %= 90;
+      roman += 'L'.repeat(integer / 50); integer %= 50;
+      roman += 'XL'.repeat(integer / 40); integer %= 40;
+      roman += 'X'.repeat(integer / 10); integer %= 10;
+      roman += 'IX'.repeat(integer / 9); integer %= 9;
+      roman += 'V'.repeat(integer / 5); integer %= 5;
+      roman += 'IV'.repeat(integer / 4); integer %= 4;
+      roman += 'I'.repeat(integer);
       return roman;
    }
 
@@ -332,7 +273,7 @@ class Util {
 
    Note: Step can be negative, or non-integer. */
 
-   static seq(start, end, step = 1) {
+   static seq(start: number, end: number, step = 1) {
       const result = [];
       for (let value = start; step > 0 ? value <= end : value >= end; value += step)
          result.push(value);
@@ -344,33 +285,11 @@ class Util {
 
    If the array has only one value, then return the array is returned. */
 
-   static minMax(array) {
+   static minMax(array: number[]) {
       if (array.length > 1)
          return [Math.min(...array), Math.max(...array)];
       else
          return array;
-   }
-
-
-   /* Write log messages with a time in milliseconds elapsed since window.ST_TIMELINE_START that should be stored
-   at the earliest possible moment in the first <script> element of <head>. */
-
-   static logTimeline(message, { devel = false } = {}) {
-
-      /* If window.ST_TIMELINE_START is not set, set it on first call */
-
-      if (!window.ST_TIMELINE_START) {
-         console.info('Initializing window.ST_TIMELINE_START as it is not set');
-         window.ST_TIMELINE_START = Date.now();
-      }
-
-      if (devel && !Util.envDevelopment)
-         return;
-
-      console.info(
-         `%c<< ${Date.now() - +window.ST_TIMELINE_START} ms >> ${message}`,
-         `font-weight: ${devel ? 'normal' : 'bold'}; font-size: 1.1em;`
-      );
    }
 
 
@@ -379,7 +298,7 @@ class Util {
 
    For example: ['a', 'b', 'c'], [1, 2] => [['a', 1], ['b', 2], ['c', undefined]] */
 
-   static zip(...args) {
+   static zip(...args: unknown[][]) {
       const iterators = args.map(arg => arg[Symbol.iterator]());
       const result = [];
 
@@ -408,8 +327,8 @@ class Util {
    this can be limited by providing the third parameter maxComponents. */
 
    static versionCompare(
-      version1,
-      version2,
+      version1: string,
+      version2: string,
       {
          maxComponents = Number.MAX_VALUE,
          skipLeadingZeros = false
@@ -442,17 +361,26 @@ class Util {
 
    Positive offset returns an older version, negative offset a newer version. */
 
-   static #versionCalculate(version, offset) {
-      const [, major, minor] = version.match(/^[0-9]+\.([0-9]+)\.([0-9]+)/);
-      const oldVersion = Number(major) * 12 + Number(minor) - Number(offset);
-      return `0.${Math.floor(oldVersion / 12)}.${oldVersion % 12}`;
+   static #versionCalculate(version: string, offset: number) {
+      const versionMatch: RegExpMatchArray | null = version.match(/^[0-9]+\.([0-9]+)\.([0-9]+)/);
+
+      if (versionMatch?.length === 3) {
+         const [, major, minor] = versionMatch;
+         const oldVersion = Number(major) * 12 + Number(minor) - Number(offset);
+         return `0.${Math.floor(oldVersion / 12)}.${oldVersion % 12}`;
+      } else
+         throw new Error('Invalid version: ' + version);
    }
 
-   static versionEarlier(version, offset) {
+   /* Calculate earlier version */
+
+   static versionEarlier(version: string, offset: number) {
       return Util.#versionCalculate(version, offset);
    }
 
-   static versionLater(version, offset) {
+   /* Calculate later version */
+
+   static versionLater(version: string, offset: number) {
       return Util.#versionCalculate(version, -offset);
    }
 
@@ -464,7 +392,7 @@ class Util {
 
    TODO: Configurable handling for duplicate values? Currently they are also spaced out. */
 
-   static distNumbers(src, dist) {
+   static distNumbers(src: number[], dist: number) {
 
       /* Shift integer value at the given index by the given amount.
 
@@ -472,7 +400,7 @@ class Util {
       too close. If it is, recursively shift it either the same amount or to
       the minimum distance, whichever is less. */
 
-      const move = (j, shift) => {
+      const move = (j: number, shift: number) => {
          a[j].n += shift;
          if (shift > 0 && j + 1 in a) {
             const spread = dist - (a[j + 1].n - a[j].n);
@@ -508,10 +436,12 @@ class Util {
    }
 
 
-   static arrayIntersection(...arrays) {
+   /* Intersection of two or more arrays */
 
-      /* Recursively intersect two or more arrays */
-      const doIntersection = (...arrays) => {
+   static arrayIntersection(...arrays: unknown[][]) {
+
+      // Recursive worker to handle two arrays at a time
+      const doIntersection = (...arrays: unknown[][]) => {
          const set = new Set(arrays[1]);
          const intersection = arrays[0].filter(value => set.has(value));
          if (arrays.length > 2)
@@ -528,11 +458,12 @@ class Util {
          return doIntersection(...arrays);
    }
 
+   /* Intersection of two or more arrays */
 
-   static arrayUnion(...arrays) {
+   static arrayUnion(...arrays: unknown[][]) {
 
-      /* Recursively make a union of two or more arrays */
-      const doUnion = (...arrays) => {
+      // Recursive worker to handle two arrays at a time
+      const doUnion = (...arrays: unknown[][]) => {
          const set = new Set(arrays[0]);
          const union = [...arrays[0], ...arrays[1].filter(value => !set.has(value))];
          if (arrays.length > 2)
@@ -549,11 +480,12 @@ class Util {
          return doUnion(...arrays);
    }
 
+   /* Difference of two or more arrays */
 
-   static arrayDifference(...arrays) {
+   static arrayDifference(...arrays: unknown[][]) {
 
-      /* Recursively make a difference of two or more arrays */
-      const doDifference = (...arrays) => {
+      // Recursive worker to handle two arrays at a time
+      const doDifference = (...arrays: unknown[][]) => {
          const set = new Set(arrays[1]);
          const difference = arrays[0].filter(value => !set.has(value));
          if (arrays.length > 2)
@@ -583,27 +515,30 @@ class Util {
    Warning: Duplicate values are not handled consistently. Duplicates included only in one of the
    arrays are retained, but if included in both only duplicates of A are retained. */
 
-   static arrayCompare(a, b) {
+   static arrayCompare(a: unknown[], b: unknown[]) {
       const onlyA = [];
       const onlyB = [];
       const both = [];
       const aSet = new Set(a);
       const bSet = new Set(b);
+
       for (const aValue of a)
          if (bSet.has(aValue))
             both.push(aValue);
          else
             onlyA.push(aValue);
+
       for (const bValue of b)
          if (!aSet.has(bValue))
             onlyB.push(bValue);
+
       return [onlyA, both, onlyB];
    }
 
 
    /* Split array into chunks of the given size. Last chunk may be shorter. */
 
-   static arrayChunks(a, chunkSize) {
+   static arrayChunks(a: unknown[], chunkSize: number) {
       const result = [];
       for (let i = 0; i < a.length; i += chunkSize)
          result.push(a.slice(i, i + chunkSize));
@@ -617,7 +552,7 @@ class Util {
    As an example, if an array of length 9 is split to chunks of maximum length 4,
    three arrays of length 3 are returned. */
 
-   static arrayChunksEqual(a, maxChunkSize) {
+   static arrayChunksEqual(a: unknown[], maxChunkSize: number) {
       const noChunks = Math.ceil(a.length / maxChunkSize);
       const chunkSize = Math.ceil(a.length / noChunks);
       return Util.arrayChunks(a, chunkSize);
@@ -630,7 +565,7 @@ class Util {
 
    Currently only slope is used so the rest have been commented. */
 
-   static linearRegression(y, x) {
+   static linearRegression(y: number[], x: number[]) {
       const n = y.length;
       let sumX = 0;
       let sumY = 0;
@@ -658,20 +593,29 @@ class Util {
    }
 
 
-   static camelToUpperCase(s) {
+   /* Convert "camelCase" to "UPPER_CASE" */
+
+   static camelToUpperCase(s: string) {
       return s.replaceAll(/[A-Z]/g, (match, offset) => (offset > 0 ? '_' : '') + match).toUpperCase();
    }
 
-   static camelToLowerCase(s) {
+   /* Convert "camelCase" to "lower_case" */
+
+   static camelToLowerCase(s: string) {
       return s.replaceAll(/[A-Z]/g, (match, offset) => (offset > 0 ? '_' : '') + match).toLowerCase();
    }
 
 
-   static #tableColumns;
-   static #tableLogger;
-   static #tableRule;
+   static #tableColumns: { width: number, right?: boolean }[];
+   static #tableLogger: (message: string) => void;
+   static #tableRule: string;
 
-   static tableStart(columns, { logger = null } = {}) {
+   /* Start printing table to console or given logger */
+
+   static tableStart(
+      columns: { name: string, width: number, right?: boolean }[],
+      { logger }: { logger?: (message: string) => void } = {}
+   ) {
       Util.#tableColumns = columns.map(({ name, width, right }) => ({
          width: width || name.length,
          right
@@ -683,13 +627,17 @@ class Util {
       Util.#tableLogger(Util.#tableRule);
    }
 
-   static tableRow(...values) {
+   /* Print a table row */
+
+   static tableRow(...values: unknown[]) {
       Util.#tableLogger(values.map((value, i) =>
          Util.#tableColumns[i].right ?
             String(value).padEnd(Util.#tableColumns[i].width) :
             String(value).padStart(Util.#tableColumns[i].width)
       ).join(' '));
    }
+
+   /* Print a horizontal line to end the table */
 
    static tableEnd() {
       Util.#tableLogger(Util.#tableRule);
@@ -698,26 +646,26 @@ class Util {
 
    /* Asynchronous intervals, adapted from: https://dev.to/jsmccrumb/asynchronous-setinterval-4j69 */
 
-   static #asyncIntervals = [];
+   static #asyncIntervals: boolean[] = [];
 
-   static async #runAsyncInterval(callback, interval, intervalIndex) {
+   static async #runAsyncInterval(callback: () => Promise<void>, interval: number, intervalIndex: number) {
       await callback();
       if (Util.#asyncIntervals[intervalIndex])
-         setTimeout(() => Util.#runAsyncInterval(callback, interval, intervalIndex), interval);
+         setTimeout(() => void Util.#runAsyncInterval(callback, interval, intervalIndex), interval);
    }
 
-   static setAsyncInterval(callback, interval) {
+   static setAsyncInterval(callback: () => Promise<void>, interval: number) {
       if (typeof callback === 'function') {
          const intervalIndex = Util.#asyncIntervals.length;
          Util.#asyncIntervals.push(true);
-         Util.#runAsyncInterval(callback, interval, intervalIndex);
+         void Util.#runAsyncInterval(callback, interval, intervalIndex);
          return intervalIndex;
       } else {
          throw new Error('Callback must be a function');
       }
    }
 
-   static clearAsyncInterval(intervalIndex) {
+   static clearAsyncInterval(intervalIndex: number) {
       if (Util.#asyncIntervals[intervalIndex])
          Util.#asyncIntervals[intervalIndex] = false;
    }

@@ -1,6 +1,6 @@
 {
    "name": "@antti5/ship-tool-common",
-   "version": "1.1.0",
+   "version": "1.1.1",
    "description": "Ship Tool common utils and library code",
    "repository": {
       "type": "git",
@@ -16,17 +16,19 @@
       "tag": "bin/tag"
    },
    "exports": {
-      "./Util": "./lib/Util.js",
+      "./Util": "./lib/Util.ts",
       "./Semaphore": "./lib/Semaphore.ts",
       "./UID": "./lib/UID.ts",
       "./Trajectory": "./lib/trajectory/Trajectory.ts",
-      "./node/Util": "./lib/UtilNode.js"
+      "./node/Util": "./lib/UtilNode.ts"
    },
    "scripts": {
       "eslint": "eslint . --ignore-pattern \"node_modules/*\""
    },
    "devDependencies": {
       "@eslint/js": "9.39.2",
+      "@types/find-config": "1.0.4",
+      "@types/node": "26.6.6",
       "eslint": "9.36.0",
       "globals": "16.4.0",
       "typescript-eslint": "8.73.0"
