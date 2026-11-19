@@ -1,5 +1,8 @@
 class UID {
 
+   static #uidOldTimestamp: number;
+   static #uidCounter: number;
+
    /* Return an UID with the following properties:
 
    1) Length is fixed at 10 characters.
@@ -8,9 +11,6 @@ class UID {
    4) Uniqueness in the same process is guaranteed for 25 years.
    5) If UIDs are created in two different processes within a one-second time
       window, the probability of a collision is less than one in billion. */
-
-   static #uidOldTimestamp = null;
-   static #uidCounter = null;
 
    static create() {
 
@@ -22,7 +22,7 @@ class UID {
 
       /* Return a positive integer in a different base. */
 
-      const ntoaBase = n => {
+      const ntoaBase = (n: number) => {
          let result = '';
          while (n >= BASE) {
             result = DIGITS[n % BASE] + result;

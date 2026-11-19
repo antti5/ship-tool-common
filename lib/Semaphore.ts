@@ -1,20 +1,31 @@
+interface Waiter {
+   resolve: (value?: unknown) => void,
+   reject: (reason: unknown) => void
+}
+
+interface QueueItem extends Waiter {
+   jobClass?: string,
+}
+
+
 class Semaphore {
 
    #value = 0;
    #max;
-   #queue = [];
+   #queue: QueueItem[] = [];
 
-   #rateLimit;
-   #rateLimitInterval;
+   #rateLimit: number = 0;
+   #rateLimitInterval: number | null = null;
 
-   #waiters = [];
+   #waiters: Waiter[] = [];
 
-   constructor(max = 1, { rateLimit = null } = {}) {
+
+   constructor(max = 1, { rateLimit = 0 }: { rateLimit?: number } = {}) {
       this.#max = max;
       this.#rateLimit = rateLimit;
    }
 
-   acquire({ jobClass = null } = {}) {
+   acquire({ jobClass }: { jobClass?: string } = {}) {
 
       /* If the semaphore is not at maximum value and no rate limit interval
       has been set, return immediately.
@@ -23,7 +34,7 @@ class Semaphore {
       acquisition will be timed. */
 
       if (this.#value < this.#max && !this.#rateLimitInterval) {
-         if (this.#rateLimit)
+         if (this.#rateLimit > 0)
             this.#rateLimitInterval = setInterval(
                () => this.#resolveNext(),
                1000 / this.#rateLimit
@@ -42,7 +53,11 @@ class Semaphore {
 
       if (this.#value === 0 && this.#queue.length === 0)
          while (this.#waiters.length > 0)
-            this.#waiters.pop().resolve();
+
+            /* Note: Here non-null assertion is required because, regardless of the length check,
+            TypeScript believes that pop() may return undefined. */
+
+            this.#waiters.pop()!.resolve();
 
       if (!this.#rateLimit)
          this.#resolveNext();
@@ -51,7 +66,7 @@ class Semaphore {
    #resolveNext() {
       if (this.#queue.length > 0 && this.#value < this.#max) {
          this.#value++;
-         this.#queue.shift().resolve();
+         this.#queue.shift()!.resolve();
       }
 
       if (this.#queue.length === 0 && this.#rateLimitInterval) {
@@ -62,23 +77,23 @@ class Semaphore {
 
    purge() {
       while (this.#queue.length > 0)
-         this.#queue.pop().reject('Semaphore was purged');
+         this.#queue.pop()!.reject('Semaphore was purged');
 
       while (this.#waiters.length > 0)
-         this.#waiters.pop().reject('Semaphore was purged');
+         this.#waiters.pop()!.reject('Semaphore was purged');
 
       this.#queue = [];
       this.#value = 0;
    }
 
-   raiseJobClass(jobClass) {
+   raiseJobClass(jobClass: string) {
       this.#queue = [
          ...this.#queue.filter(job => job.jobClass === jobClass),
          ...this.#queue.filter(job => job?.jobClass !== jobClass)
       ];
    }
 
-   lowerJobClass(jobClass) {
+   lowerJobClass(jobClass: string) {
       this.#queue = [
          ...this.#queue.filter(job => job?.jobClass !== jobClass),
          ...this.#queue.filter(job => job.jobClass === jobClass)
@@ -93,7 +108,7 @@ class Semaphore {
       return this.#max;
    }
 
-   setMax(max) {
+   setMax(max: number) {
       this.#max = max;
    }
 
@@ -101,11 +116,14 @@ class Semaphore {
       return this.#rateLimit;
    }
 
-   setRateLimit(rateLimit) {
+   setRateLimit(rateLimit: number) {
       this.#rateLimit = rateLimit;
    }
 
-   async run(func, { jobClass = null } = {}) {
+   async run(
+      func: () => Promise<void>,
+      { jobClass }: { jobClass?: string } = {}
+   ) {
       try {
          await this.acquire({ jobClass });
          return await func();
@@ -119,6 +137,7 @@ class Semaphore {
          return new Promise((resolve, reject) => {
             this.#waiters.push({ resolve, reject });
          });
+      return;
    }
 }
 

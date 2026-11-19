@@ -1,11 +1,16 @@
 class Vector3 {
+
+   x: number;
+   y: number;
+   z: number;
+
    constructor(x = 0.0, y = 0.0, z = 0.0) {
       this.x = x;
       this.y = y;
       this.z = z;
    }
 
-   static copy(other) {
+   static copy(other: Vector3) {
       return new Vector3(
          other.x,
          other.y,
@@ -13,13 +18,13 @@ class Vector3 {
       );
    }
 
-   iadd(other) {
+   iadd(other: Vector3) {
       this.x += other.x;
       this.y += other.y;
       this.z += other.z;
    }
 
-   add(other) {
+   add(other: Vector3) {
       return new Vector3(
          this.x + other.x,
          this.y + other.y,
@@ -27,13 +32,13 @@ class Vector3 {
       );
    }
 
-   isub(other) {
+   isub(other: Vector3) {
       this.x -= other.x;
       this.y -= other.y;
       this.z -= other.z;
    }
 
-   sub(other) {
+   sub(other: Vector3) {
       return new Vector3(
          this.x - other.x,
          this.y - other.y,
@@ -41,7 +46,7 @@ class Vector3 {
       );
    }
 
-   imul(other) {
+   imul(other: Vector3 | number) {
       if (other instanceof Vector3) {
          this.x *= other.x;
          this.y *= other.y;
@@ -53,7 +58,7 @@ class Vector3 {
       }
    }
 
-   mul(other) {
+   mul(other: Vector3 | number) {
       if (other instanceof Vector3)
          return new Vector3(
             this.x * other.x,
@@ -68,7 +73,7 @@ class Vector3 {
          );
    }
 
-   idiv(other) {
+   idiv(other: Vector3 | number) {
       if (other instanceof Vector3) {
          this.x /= other.x;
          this.y /= other.y;
@@ -80,7 +85,7 @@ class Vector3 {
       }
    }
 
-   div(other) {
+   div(other: Vector3 | number) {
       if (other instanceof Vector3)
          return new Vector3(
             this.x / other.x,
@@ -95,7 +100,7 @@ class Vector3 {
          );
    }
 
-   dot(other) {
+   dot(other: Vector3) {
       return this.x * other.x + this.y * other.y + this.z * other.z;
    }
 

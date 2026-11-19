@@ -1,4 +1,4 @@
-import Vector3 from './Vector3.js';
+import Vector3 from './Vector3.ts';
 
 const G = 9.8;
 const G_VEC = new Vector3(0, -G, 0);
@@ -10,12 +10,20 @@ const TEMPERATURE_LAPSE_RATE_LVL0 = -0.0065;  // K / m
 const PRESSURE_CST_H0 = G * AIR_MOLAR_MASS / (GAS_CST_R * TEMPERATURE_LAPSE_RATE_LVL0);
 
 class BulletSim {
-   constructor(mass, diam, dragCoeff, vel, pos, dir) {
+
+   mass: number;
+   dragCoeff: number;
+   area: number;
+   time: number;
+   pos: Vector3;
+   vel: Vector3;
+
+   constructor(mass: number, diam: number, dragCoeff: number, vel: number, pos: Vector3, dir: Vector3) {
       this.mass = mass;
       this.dragCoeff = dragCoeff;
       this.pos = pos;
       this.vel = dir.normalized().mul(vel);
-      this.area = 0.25 * diam * diam * Math.PI;
+      this.area = diam ** 2 * Math.PI / 4;
       this.time = 0.0;
    }
 
