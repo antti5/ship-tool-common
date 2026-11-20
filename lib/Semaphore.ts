@@ -15,10 +15,9 @@ class Semaphore {
    #queue: QueueItem[] = [];
 
    #rateLimit: number = 0;
-   #rateLimitInterval: number | null = null;
+   #rateLimitInterval: NodeJS.Timeout | null = null;
 
    #waiters: Waiter[] = [];
-
 
    constructor(max = 1, { rateLimit = 0 }: { rateLimit?: number } = {}) {
       this.#max = max;
