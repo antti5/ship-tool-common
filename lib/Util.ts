@@ -38,13 +38,13 @@ class Util {
          timeout,
          debug
       }: {
-         urlSearchParams: Record<string,string>,
-         method: string,
-         body: unknown,
-         headers: Record<string,string>,
-         timeout: number,
-         debug: boolean
-      }
+         urlSearchParams?: Record<string,string>,
+         method?: string,
+         body?: unknown,
+         headers?: Record<string,string>,
+         timeout?: number,
+         debug?: boolean
+      } = {}
    ) {
 
       if (urlSearchParams)
