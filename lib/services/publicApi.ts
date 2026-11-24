@@ -1,5 +1,6 @@
-import Semaphore from '../Semaphore.ts';
 import z from 'zod';
+import Util from '../Util.ts';
+import Semaphore from '../Semaphore.ts';
 
 
 /* Helper function to call any of the API endpoints */
@@ -26,8 +27,8 @@ const WgResponseSchema = z.object({
    data: z.union([z.looseObject({}), z.array(z.unknown())])
 });
 
-const callApi = async (url: string) => {
-   const data = await (await fetch(url)).json() as unknown;
+const callApi = async (url: string, options = {}) => {
+   const data = await Util.fetch(url, options);
    const response = WgResponseSchema.parse(data);
 
    if (response.status !== 'ok')
@@ -43,8 +44,12 @@ const EncyclopediaInfoSchema = z.object({
    game_version: z.string()
 });
 
-const encyclopediaInfo = async (apiId: string) => {
-   const { data } = await callApi(`https://api.worldofwarships.eu/wows/encyclopedia/info/?application_id=${apiId}`);
+const encyclopediaInfo = async (apiId: string, { debug = false } = {}) => {
+   const { data } = await callApi(
+      `https://api.worldofwarships.eu/wows/encyclopedia/info/?application_id=${apiId}`,
+      { debug }
+   );
+
    return EncyclopediaInfoSchema.parse(data);
 };
 
@@ -60,8 +65,11 @@ const EncyclopediaShipsSchema = z.record(
    })
 );
 
-const encyclopediaShips = async (apiId: string, { concurrency = 1 } = {}) => {
-   const { meta, data } = await callApi(`https://api.worldofwarships.eu/wows/encyclopedia/ships/?application_id=${apiId}`);
+const encyclopediaShips = async (apiId: string, { concurrency = 1, debug = false } = {}) => {
+   const { meta, data } = await callApi(
+      `https://api.worldofwarships.eu/wows/encyclopedia/ships/?application_id=${apiId}`,
+      { debug }
+   );
 
    if (!meta || !meta.page_total)
       throw new Error('Unexpected /encyclopedia/ships response');
@@ -95,8 +103,11 @@ const ClansListSchema = z.array(
    })
 );
 
-const clansList = async (apiId: string, region: string, clanTag: string) => {
-   const { data } = await callApi(`https://api.worldofwarships.${region}/wows/clans/list/?application_id=${apiId}&search=${clanTag}`);
+const clansList = async (apiId: string, region: string, clanTag: string, { debug = false } = {}) => {
+   const { data } = await callApi(
+      `https://api.worldofwarships.${region}/wows/clans/list/?application_id=${apiId}&search=${clanTag}`,
+      { debug }
+   );
    const response = ClansListSchema.parse(data);
    const clanInfo = response.find(({ tag }) => tag === clanTag);
 
@@ -128,8 +139,11 @@ const ClansInfoSchema = z.record(
    }))
 );
 
-const clansInfoMany = async (apiId: string, region: string, clanIds: number[]) => {
-   const { data } = await callApi(`https://api.worldofwarships.${region}/wows/clans/info/?application_id=${apiId}&clan_id=${clanIds.join(',')}&extra=members`);
+const clansInfoMany = async (apiId: string, region: string, clanIds: number[], { debug = false } = {}) => {
+   const { data } = await callApi(
+      `https://api.worldofwarships.${region}/wows/clans/info/?application_id=${apiId}&clan_id=${clanIds.join(',')}&extra=members`,
+      { debug }
+   );
    return ClansInfoSchema.parse(data);
 };
 
@@ -164,13 +178,16 @@ const AccountInfoSchema = z.record(
    })
 );
 
-const accountInfoMany = async (apiId: string, region: string, accountIds: number[]) => {
-   const { data } = await callApi(`https://api.worldofwarships.${region}/wows/account/info/?application_id=${apiId}&account_id=${accountIds.join(',')}&extra=statistics.pvp_solo`);
+const accountInfoMany = async (apiId: string, region: string, accountIds: number[], { debug = false } = {}) => {
+   const { data } = await callApi(
+      `https://api.worldofwarships.${region}/wows/account/info/?application_id=${apiId}&account_id=${accountIds.join(',')}&extra=statistics.pvp_solo`,
+      { debug }
+   );
    return AccountInfoSchema.parse(data);
 };
 
-const accountInfoOne = async (apiId: string, region: string, accountId: number) => {
-   const response = await accountInfoMany(apiId, region, [accountId]);
+const accountInfoOne = async (apiId: string, region: string, accountId: number, options = {}) => {
+   const response = await accountInfoMany(apiId, region, [accountId], options);
 
    if (!response[accountId])
       throw new Error('Account not found in /account/info response: ' + accountId);
@@ -193,8 +210,11 @@ const ShipsStatsSchema = z.record(
    )
 );
 
-const shipsStats = async (apiId: string, region: string, accountId: number)  => {
-   const { data } = await callApi(`https://api.worldofwarships.${region}/wows/ships/stats/?application_id=${apiId}&account_id=${accountId}`);
+const shipsStats = async (apiId: string, region: string, accountId: number, { debug = false } = {})  => {
+   const { data } = await callApi(
+      `https://api.worldofwarships.${region}/wows/ships/stats/?application_id=${apiId}&account_id=${accountId}`,
+      { debug }
+   );
    const response = ShipsStatsSchema.parse(data);
 
    if (!response[accountId])
