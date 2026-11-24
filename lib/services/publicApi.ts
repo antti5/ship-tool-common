@@ -32,7 +32,7 @@ const callApi = async (url: string, options = {}) => {
    const response = WgResponseSchema.parse(data);
 
    if (response.status !== 'ok')
-      throw new Error(`Wargaming API error: ${response?.error?.message}`);
+      throw Error(`Wargaming API error: ${response?.error?.message}`);
 
    return response;
 };
@@ -72,7 +72,7 @@ const encyclopediaShips = async (apiId: string, { concurrency = 1, debug = false
    );
 
    if (!meta || !meta.page_total)
-      throw new Error('Unexpected /encyclopedia/ships response');
+      throw Error('Unexpected /encyclopedia/ships response');
 
    const ships = EncyclopediaShipsSchema.parse(data);
    console.debug(`Loaded encyclopedia page ${meta.page} / ${meta.page_total}`);
@@ -112,7 +112,7 @@ const clansList = async (apiId: string, region: string, clanTag: string, { debug
    const clanInfo = response.find(({ tag }) => tag === clanTag);
 
    if (!clanInfo)
-      throw new Error('Clan tag not found in /clans/list response: ' + clanTag);
+      throw Error('Clan tag not found in /clans/list response: ' + clanTag);
 
    return clanInfo;
 };
@@ -151,9 +151,27 @@ const clansInfoOne = async (apiId: string, region: string, clanId: number) => {
    const response = await clansInfoMany(apiId, region, [clanId]);
 
    if (!response[clanId])
-      throw new Error('Clan not found in /clans/info response: ' + clanId);
+      throw Error('Clan not found in /clans/info response: ' + clanId);
 
    return response[clanId];
+};
+
+
+/* /clans/season -- Information about clan battle seasons */
+
+const ClansSeasonSchema = z.record(
+   z.number(),
+   z.object({
+      start_time: z.number()
+   })
+);
+
+const clansSeason = async(apiId: string, { debug = false } = {}) => {
+   const { data } = await callApi(
+      `https://api.worldofwarships.eu/wows/clans/season/?application_id=${apiId}`,
+      { debug }
+   );
+   return ClansSeasonSchema.parse(data);
 };
 
 
@@ -190,7 +208,7 @@ const accountInfoOne = async (apiId: string, region: string, accountId: number, 
    const response = await accountInfoMany(apiId, region, [accountId], options);
 
    if (!response[accountId])
-      throw new Error('Account not found in /account/info response: ' + accountId);
+      throw Error('Account not found in /account/info response: ' + accountId);
 
    return response[accountId];
 };
@@ -218,7 +236,7 @@ const shipsStats = async (apiId: string, region: string, accountId: number, { de
    const response = ShipsStatsSchema.parse(data);
 
    if (!response[accountId])
-      throw new Error('Account not found in /ships/stats response: ' + accountId);
+      throw Error('Account not found in /ships/stats response: ' + accountId);
 
    return response[accountId];
 };
@@ -230,6 +248,7 @@ export default {
    clansList,
    clansInfoMany,
    clansInfoOne,
+   clansSeason,
    accountInfoMany,
    accountInfoOne,
    shipsStats

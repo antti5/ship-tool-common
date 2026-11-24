@@ -81,7 +81,7 @@ class Util {
          console.debug('fetch() response:', response);
 
       if (!response.ok)
-         throw new Error(`${response.statusText} (${response.status})`, { cause: response });
+         throw Error(`${response.statusText} (${response.status})`, { cause: response });
 
       const responseBody =
          response.headers.get('Content-Type')?.includes('application/json') ?
@@ -369,7 +369,7 @@ class Util {
          const oldVersion = Number(major) * 12 + Number(minor) - Number(offset);
          return `0.${Math.floor(oldVersion / 12)}.${oldVersion % 12}`;
       } else
-         throw new Error('Invalid version: ' + version);
+         throw Error('Invalid version: ' + version);
    }
 
    /* Calculate earlier version */
@@ -661,7 +661,7 @@ class Util {
          void Util.#runAsyncInterval(callback, interval, intervalIndex);
          return intervalIndex;
       } else {
-         throw new Error('Callback must be a function');
+         throw Error('Callback must be a function');
       }
    }
 

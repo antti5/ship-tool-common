@@ -55,7 +55,7 @@ class Trajectory {
       const lastPoint = this.getPoints().at(-1);
 
       if (!lastPoint)
-         throw new Error('Unable to get last trajectory point');
+         throw Error('Unable to get last trajectory point');
 
       return {
          elevation: this.#elevation,
