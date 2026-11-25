@@ -355,7 +355,11 @@ const shipsStats = async (applicationId: string, region: string, accountId: numb
    if (!response[accountId])
       throw Error('Account not found in /ships/stats response: ' + accountId);
 
-   return response[accountId];
+   /* If ship identifiers are listed, remove unlisted from response */
+   if (shipIds)
+      return response[accountId].filter(shipStats => shipIds.includes(shipStats.ship_id));
+   else
+      return response[accountId];
 };
 
 const shipsStatsAll = async (applicationId: string, region: string, accountId: number, { debug = false } = {}) => {
