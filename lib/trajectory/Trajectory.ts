@@ -1,6 +1,6 @@
-import Vector3 from './Vector3.ts';
-import BulletSim from './BulletSim.ts';
-import TrajectoryPoint from './TrajectoryPoint.ts';
+import Vector3 from './Vector3.js';
+import BulletSim from './BulletSim.js';
+import TrajectoryPoint from './TrajectoryPoint.js';
 
 class Trajectory {
 

@@ -3,7 +3,7 @@ import path from 'path';
 import zlib from 'zlib';
 import dotenv from 'dotenv';
 import findConfig from 'find-config';
-import Util from './Util.ts';
+import Util from './Util.js';
 
 
 /* Additional utility functions that only work in Node.js */

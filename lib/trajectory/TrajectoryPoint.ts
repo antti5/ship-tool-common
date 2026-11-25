@@ -1,4 +1,4 @@
-import Vector3 from './Vector3.ts';
+import Vector3 from './Vector3.js';
 
 const BALLISTIC_FLATTENING_ENABLED = true;
 const BALLISTIC_FLATTENING = 1.0;

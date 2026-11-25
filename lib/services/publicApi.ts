@@ -1,6 +1,6 @@
 import z from 'zod';
-import Util from '../Util.ts';
-import Semaphore from '../Semaphore.ts';
+import Util from '../Util.js';
+import Semaphore from '../Semaphore.js';
 
 
 /* Helper function to call any of the API endpoints */

@@ -1,4 +1,4 @@
-import Vector3 from './Vector3.ts';
+import Vector3 from './Vector3.js';
 
 const G = 9.8;
 const G_VEC = new Vector3(0, -G, 0);

@@ -3,11 +3,13 @@
       "target": "es2022",
       "module": "nodenext",
       "types": ["node"],
+      "outDir": "dist",
+      "rootDir": "lib",
+      "declaration": true,
+      "declarationMap": true,
 
       /* Bundler mode */
       "moduleResolution": "nodenext",
-      "allowImportingTsExtensions": true,
-      "noEmit": true,
 
       /* Linting */
       "strict": true,
@@ -18,9 +20,12 @@
       "noUnusedLocals": true,
       "noUnusedParameters": true,
 
+      /* Only allow syntax wihout runtime semantics. */
+      "erasableSyntaxOnly": true,
+      "verbatimModuleSyntax": true,
+
       /* Allows JSON file import, like vanilla JavaScript would do with import attribute:
       import './foo.json' with { type: 'json '} */
       "resolveJsonModule": true
-   },
-   "include": ["lib"]
+   }
 }

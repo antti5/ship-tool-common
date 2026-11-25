@@ -1,6 +1,6 @@
 {
    "name": "@antti5/ship-tool-common",
-   "version": "1.1.4",
+   "version": "1.1.5",
    "description": "Ship Tool common utils and library code",
    "repository": {
       "type": "git",
@@ -16,15 +16,17 @@
       "tag": "bin/tag"
    },
    "exports": {
-      "./Util": "./lib/Util.ts",
-      "./Semaphore": "./lib/Semaphore.ts",
-      "./UID": "./lib/UID.ts",
-      "./Trajectory": "./lib/trajectory/Trajectory.ts",
-      "./node/Util": "./lib/UtilNode.ts",
-      "./publicApi": "./lib/services/publicApi.ts"
+      "./Util": "./dist/Util.js",
+      "./Semaphore": "./dist/Semaphore.js",
+      "./UID": "./dist/UID.js",
+      "./node/Util": "./dist/UtilNode.js",
+      "./Trajectory": "./dist/trajectory/Trajectory.js",
+      "./publicApi": "./dist/services/publicApi.js"
    },
    "scripts": {
-      "eslint": "eslint . --ignore-pattern \"node_modules/*\""
+      "eslint": "eslint . --ignore-pattern \"node_modules/*\"",
+      "types:check": "tsc --noEmit",
+      "prepack": "tsc"
    },
    "dependencies": {
       "dotenv": "17.4.2",
@@ -37,6 +39,7 @@
       "@types/node": "26.6.6",
       "eslint": "9.36.0",
       "globals": "16.4.0",
+      "typescript": "6.0.3",
       "typescript-eslint": "8.73.0"
    }
 }
