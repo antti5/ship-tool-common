@@ -276,6 +276,7 @@ const AccountInfoSchema = z.record(
       nickname: z.string(),
       created_at: z.number(),
       last_battle_time: z.number(),
+      hidden_profile: z.boolean(),
       statistics: z.nullable(z.object({ // null for private accounts
          pvp: z.optional(z.object({
             battles: z.number(),
